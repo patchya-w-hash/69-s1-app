@@ -443,34 +443,226 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiStudentStudent extends Struct.CollectionTypeSchema {
-  collectionName: 'students';
+export interface ApiAttendanceAttendance extends Struct.CollectionTypeSchema {
+  collectionName: 'attendances';
   info: {
-    displayName: 'Student';
-    pluralName: 'students';
-    singularName: 'student';
+    description: 'Daily employee attendance and time logs';
+    displayName: 'Attendance';
+    pluralName: 'attendances';
+    singularName: 'attendance';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
+    checkIn: Schema.Attribute.Time;
+    checkOut: Schema.Attribute.Time;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    date: Schema.Attribute.Date & Schema.Attribute.Required;
+    employee: Schema.Attribute.Relation<'manyToOne', 'api::employee.employee'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
-      'api::student.student'
+      'api::attendance.attendance'
+    > &
+      Schema.Attribute.Private;
+    notes: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<['Present', 'Late', 'Absent', 'WFH']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Present'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiDepartmentDepartment extends Struct.CollectionTypeSchema {
+  collectionName: 'departments';
+  info: {
+    description: 'Department / Division in organization';
+    displayName: 'Department';
+    pluralName: 'departments';
+    singularName: 'department';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    code: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    employees: Schema.Attribute.Relation<'oneToMany', 'api::employee.employee'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::department.department'
     > &
       Schema.Attribute.Private;
     name: Schema.Attribute.String &
       Schema.Attribute.Required &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 6;
-        minLength: 3;
-      }>;
+      Schema.Attribute.Unique;
+    positions: Schema.Attribute.Relation<'oneToMany', 'api::position.position'>;
     publishedAt: Schema.Attribute.DateTime;
-    surname: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiEmployeeEmployee extends Struct.CollectionTypeSchema {
+  collectionName: 'employees';
+  info: {
+    description: 'Employee profile and employment info';
+    displayName: 'Employee';
+    pluralName: 'employees';
+    singularName: 'employee';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    attendances: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::attendance.attendance'
+    >;
+    avatar: Schema.Attribute.Media<'images'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    department: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::department.department'
+    >;
+    email: Schema.Attribute.Email &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    employeeId: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    employmentType: Schema.Attribute.Enumeration<
+      ['FullTime', 'PartTime', 'Contract', 'Intern']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'FullTime'>;
+    firstName: Schema.Attribute.String & Schema.Attribute.Required;
+    hireDate: Schema.Attribute.Date & Schema.Attribute.Required;
+    lastName: Schema.Attribute.String & Schema.Attribute.Required;
+    leaveRequests: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::leave-request.leave-request'
+    >;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::employee.employee'
+    > &
+      Schema.Attribute.Private;
+    manager: Schema.Attribute.Relation<'manyToOne', 'api::employee.employee'>;
+    phone: Schema.Attribute.String;
+    position: Schema.Attribute.Relation<'manyToOne', 'api::position.position'>;
+    publishedAt: Schema.Attribute.DateTime;
+    salary: Schema.Attribute.Decimal;
+    status: Schema.Attribute.Enumeration<
+      ['Active', 'Probation', 'OnLeave', 'Resigned', 'Terminated']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Active'>;
+    subordinates: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::employee.employee'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
+export interface ApiLeaveRequestLeaveRequest
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'leave_requests';
+  info: {
+    description: 'Employee leave requests and approvals';
+    displayName: 'Leave Request';
+    pluralName: 'leave-requests';
+    singularName: 'leave-request';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    approvedBy: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::employee.employee'
+    >;
+    attachment: Schema.Attribute.Media<'images' | 'files'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    days: Schema.Attribute.Decimal & Schema.Attribute.Required;
+    employee: Schema.Attribute.Relation<'manyToOne', 'api::employee.employee'>;
+    endDate: Schema.Attribute.Date & Schema.Attribute.Required;
+    leaveType: Schema.Attribute.Enumeration<
+      ['Sick', 'Annual', 'Personal', 'Maternity', 'Unpaid']
+    > &
+      Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::leave-request.leave-request'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    reason: Schema.Attribute.Text & Schema.Attribute.Required;
+    startDate: Schema.Attribute.Date & Schema.Attribute.Required;
+    status: Schema.Attribute.Enumeration<['Pending', 'Approved', 'Rejected']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'Pending'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiPositionPosition extends Struct.CollectionTypeSchema {
+  collectionName: 'positions';
+  info: {
+    description: 'Job Position';
+    displayName: 'Position';
+    pluralName: 'positions';
+    singularName: 'position';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    baseSalary: Schema.Attribute.Decimal;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    department: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::department.department'
+    >;
+    employees: Schema.Attribute.Relation<'oneToMany', 'api::employee.employee'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::position.position'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -988,7 +1180,11 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
-      'api::student.student': ApiStudentStudent;
+      'api::attendance.attendance': ApiAttendanceAttendance;
+      'api::department.department': ApiDepartmentDepartment;
+      'api::employee.employee': ApiEmployeeEmployee;
+      'api::leave-request.leave-request': ApiLeaveRequestLeaveRequest;
+      'api::position.position': ApiPositionPosition;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

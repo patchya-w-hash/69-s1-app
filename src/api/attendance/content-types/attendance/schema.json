@@ -1,0 +1,46 @@
+{
+  "kind": "collectionType",
+  "collectionName": "attendances",
+  "info": {
+    "singularName": "attendance",
+    "pluralName": "attendances",
+    "displayName": "Attendance",
+    "description": "Daily employee attendance and time logs"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "date": {
+      "type": "date",
+      "required": true
+    },
+    "checkIn": {
+      "type": "time"
+    },
+    "checkOut": {
+      "type": "time"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "Present",
+        "Late",
+        "Absent",
+        "WFH"
+      ],
+      "default": "Present",
+      "required": true
+    },
+    "notes": {
+      "type": "string"
+    },
+    "employee": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::employee.employee",
+      "inversedBy": "attendances"
+    }
+  }
+}
